@@ -1,0 +1,444 @@
+openapi: 3.0.3
+info:
+  title: E-Commerce Core API (Tags-as-Packages)
+  version: 1.0.0
+  description: |
+    항해플러스 2주차 과제 - tags 값을 디렉토리/패키지 구조 힌트로 사용.
+servers:
+  - url: http://localhost:8080
+    description: Local
+
+tags:
+  - name: health.controller
+    description: 헬스체크 컨트롤러 (system/health)
+  - name: category.controller
+    description: 카테고리 컨트롤러 (category/controller)
+  - name: product.controller
+    description: 상품 컨트롤러 (product/controller)
+  - name: sku.controller
+    description: SKU 컨트롤러 (sku/controller)
+  - name: cart.controller
+    description: 장바구니 컨트롤러 (cart/controller)
+  - name: order.controller
+    description: 주문/결제 컨트롤러 (order/controller)
+  - name: coupon.controller
+    description: 쿠폰 컨트롤러 (coupon/controller)
+
+paths:
+
+  /api/health:
+    get:
+      tags: [health.controller]
+      summary: 헬스체크
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              examples: { ok: { value: OK } }
+
+  ########################
+  # Category Controller  #
+  ########################
+  /api/categories:
+    get:
+      tags: [category.controller]
+      summary: 카테고리 목록 조회
+      responses:
+        '200':
+          description: 카테고리 목록 조회
+          content:
+            text/plain:
+              examples:
+                message: { value: 카테고리 목록 조회 }
+
+  #######################
+  # Product Controller  #
+  #######################
+  /api/products:
+    get:
+      tags: [product.controller]
+      summary: 상품 목록 조회
+      parameters:
+        - in: query
+          name: q
+          schema: { type: string }
+          description: 검색어
+        - in: query
+          name: categoryId
+          schema: { type: integer, format: int64 }
+        - in: query
+          name: sort
+          schema: { type: string, enum: [POPULAR, LATEST, PRICE_ASC, PRICE_DESC] }
+      responses:
+        '200':
+          description: 상품 목록 조회
+          content:
+            text/plain:
+              examples:
+                message: { value: 상품 목록 조회 }
+
+  /api/products/{productId}:
+    get:
+      tags: [product.controller]
+      summary: 상품 상세 조회 (SKU 포함)
+      parameters:
+        - in: path
+          name: productId
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200':
+          description: 상품 상세 조회
+          content:
+            text/plain:
+              examples:
+                message: { value: 상품 상세 조회 }
+        '404':
+          description: 상품 없음
+          content:
+            text/plain:
+              examples:
+                message: { value: 상품 없음 }
+
+  /api/products/popular:
+    get:
+      tags: [product.controller]
+      summary: 인기 상품 TopN (최근 3일 기준 기본)
+      parameters:
+        - in: query
+          name: days
+          schema: { type: integer, default: 3, minimum: 1, maximum: 30 }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 5, minimum: 1, maximum: 50 }
+      responses:
+        '200':
+          description: 인기 상품 TopN 조회
+          content:
+            text/plain:
+              examples:
+                message: { value: 인기 상품 TopN 조회 }
+
+  ###################
+  # SKU Controller  #
+  ###################
+  /api/products/{productId}/skus:
+    post:
+      tags: [sku.controller]
+      summary: SKU 등록 (운영자)
+      parameters:
+        - in: path
+          name: productId
+          required: true
+          schema: { type: integer, format: int64 }
+      requestBody:
+        required: true
+        description: SKU 등록 입력(JSON) — 과제에서는 상세 필드 정의 생략
+      responses:
+        '201':
+          description: SKU 등록 완료
+          content:
+            text/plain:
+              examples:
+                message: { value: SKU 등록 완료 }
+
+  /api/skus/{skuId}:
+    patch:
+      tags: [sku.controller]
+      summary: SKU 일부 수정 (가격/재고/활성)
+      parameters:
+        - in: path
+          name: skuId
+          required: true
+          schema: { type: integer, format: int64 }
+      requestBody:
+        required: true
+        description: SKU 수정 입력(JSON) — 과제에서는 상세 필드 정의 생략
+      responses:
+        '200':
+          description: SKU 수정 완료
+          content:
+            text/plain:
+              examples:
+                message: { value: SKU 수정 완료 }
+        '409':
+          description: 동시성 충돌
+          content:
+            text/plain:
+              examples:
+                message: { value: 동시성 충돌 }
+
+  ####################
+  # Cart Controller  #
+  ####################
+  /api/cart:
+    get:
+      tags: [cart.controller]
+      summary: 내 장바구니 조회
+      responses:
+        '200':
+          description: 장바구니 조회
+          content:
+            text/plain:
+              examples:
+                message: { value: 장바구니 조회 }
+
+  /api/cart/items:
+    post:
+      tags: [cart.controller]
+      summary: 장바구니에 SKU 추가
+      requestBody:
+        required: true
+        description: 장바구니 추가 입력(JSON) — 과제에서는 상세 필드 정의 생략
+      responses:
+        '201':
+          description: 장바구니 항목 추가 완료
+          content:
+            text/plain:
+              examples:
+                message: { value: 장바구니 항목 추가 완료 }
+
+  /api/cart/items/{itemId}:
+    patch:
+      tags: [cart.controller]
+      summary: 장바구니 항목 수량 변경
+      parameters:
+        - in: path
+          name: itemId
+          required: true
+          schema: { type: integer, format: int64 }
+      requestBody:
+        required: true
+        description: 수량 변경 입력(JSON) — 과제에서는 상세 필드 정의 생략
+      responses:
+        '200':
+          description: 장바구니 항목 수정 완료
+          content:
+            text/plain:
+              examples:
+                message: { value: 장바구니 항목 수정 완료 }
+
+    delete:
+      tags: [cart.controller]
+      summary: 장바구니 항목 삭제
+      parameters:
+        - in: path
+          name: itemId
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '204':
+          description: 장바구니 항목 삭제 완료
+          content:
+            text/plain:
+              examples:
+                message: { value: 장바구니 항목 삭제 완료 }
+
+  #####################
+  # Order Controller  #
+  #####################
+  /api/orders:
+    post:
+      tags: [order.controller]
+      summary: 주문 생성 (장바구니 → 주문)
+      requestBody:
+        required: false
+        description: 결제 전 주문 생성 — 과제에서는 상세 필드 정의 생략
+      responses:
+        '201':
+          description: 주문 생성 완료
+          content:
+            text/plain:
+              examples:
+                message: { value: 주문 생성 완료 }
+
+    get:
+      tags: [order.controller]
+      summary: 내 주문 목록 조회 (전체)
+      responses:
+        '200':
+          description: 주문 목록 조회
+          content:
+            text/plain:
+              examples:
+                message: { value: 주문 목록 조회 }
+
+  /api/orders/{orderId}:
+    get:
+      tags: [order.controller]
+      summary: 주문 상세 조회
+      parameters:
+        - in: path
+          name: orderId
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200':
+          description: 주문 상세 조회
+          content:
+            text/plain:
+              examples:
+                message: { value: 주문 상세 조회 }
+        '404':
+          description: 주문 없음
+          content:
+            text/plain:
+              examples:
+                message: { value: 주문 없음 }
+
+  /api/orders/{orderId}/history:
+    get:
+      tags: [order.controller]
+      summary: 주문 상태 이력 조회
+      parameters:
+        - in: path
+          name: orderId
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200':
+          description: 주문 상태 이력 조회
+          content:
+            text/plain:
+              examples:
+                message: { value: 주문 상태 이력 조회 }
+
+  /api/orders/{orderId}/apply-coupon:
+    post:
+      tags: [order.controller, coupon.controller]
+      summary: 쿠폰 적용 (결제 전)
+      parameters:
+        - in: path
+          name: orderId
+          required: true
+          schema: { type: integer, format: int64 }
+      requestBody:
+        required: true
+        description: 쿠폰 코드 입력(JSON) — 과제에서는 상세 필드 정의 생략
+      responses:
+        '200':
+          description: 쿠폰 적용 완료
+          content:
+            text/plain:
+              examples:
+                message: { value: 쿠폰 적용 완료 }
+        '422':
+          description: 쿠폰 유효성 실패
+          content:
+            text/plain:
+              examples:
+                message: { value: 쿠폰 유효성 실패 }
+
+  /api/orders/{orderId}/pay:
+    post:
+      tags: [order.controller]
+      summary: 결제 처리(지갑 가정) + 재고 차감 + 상태 전이 (멱등)
+      parameters:
+        - in: path
+          name: orderId
+          required: true
+          schema: { type: integer, format: int64 }
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema: { type: string }
+          description: 중복 결제 방지를 위한 멱등 키
+      responses:
+        '200':
+          description: 결제 완료
+          content:
+            text/plain:
+              examples:
+                message: { value: 결제 완료 }
+        '402':
+          description: 잔액 부족
+          content:
+            text/plain:
+              examples:
+                message: { value: 잔액 부족 }
+        '409':
+          description: 재고 경합/동시성 실패
+          content:
+            text/plain:
+              examples:
+                message: { value: 재고 경합/동시성 실패 }
+
+  ######################
+  # Coupon Controller  #
+  ######################
+  /api/coupons:
+    get:
+      tags: [coupon.controller]
+      summary: 쿠폰 목록 조회
+      responses:
+        '200':
+          description: 쿠폰 목록 조회
+          content:
+            text/plain:
+              examples:
+                message: { value: 쿠폰 목록 조회 }
+
+    post:
+      tags: [coupon.controller]
+      summary: 쿠폰 생성(운영자)
+      requestBody:
+        required: true
+        description: 쿠폰 생성 입력(JSON) — 과제에서는 상세 필드 정의 생략
+      responses:
+        '201':
+          description: 쿠폰 생성 완료
+          content:
+            text/plain:
+              examples:
+                message: { value: 쿠폰 생성 완료 }
+
+  /api/coupons/{couponId}:
+    get:
+      tags: [coupon.controller]
+      summary: 쿠폰 상세 조회
+      parameters:
+        - in: path
+          name: couponId
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200':
+          description: 쿠폰 상세 조회
+          content:
+            text/plain:
+              examples:
+                message: { value: 쿠폰 상세 조회 }
+        '404':
+          description: 쿠폰 없음
+          content:
+            text/plain:
+              examples:
+                message: { value: 쿠폰 없음 }
+
+  /api/coupons/{couponId}/issue:
+    post:
+      tags: [coupon.controller]
+      summary: 선착순 쿠폰 발급
+      parameters:
+        - in: path
+          name: couponId
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '201':
+          description: 쿠폰 발급 완료
+          content:
+            text/plain:
+              examples:
+                message: { value: 쿠폰 발급 완료 }
+        '409':
+          description: 발급 한도 초과 또는 중복 발급
+          content:
+            text/plain:
+              examples:
+                message: { value: 발급 한도 초과 또는 중복 발급 }
+
+components: {}
+security: []
+
