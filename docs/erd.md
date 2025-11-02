@@ -2,7 +2,7 @@
 
 ```mermaid
 erDiagram
-%% NOTE: Mermaid에서 예약어 충돌을 피하기 위해 order 테이블은 order_ 로 표기합니다. (실제 테이블명: `order`)
+%% NOTE: Mermaid 예약어 충돌을 피하기 위해 order 테이블은 ORDER_ 로 표기합니다. (실제명: `order`)
 
     USER {
         BIGINT id PK
@@ -10,6 +10,9 @@ erDiagram
         VARCHAR password_hash
         VARCHAR name
         VARCHAR phone
+        VARCHAR address_line1
+        VARCHAR address_line2
+        VARCHAR postal_code
         BOOLEAN is_active
         DATETIME created_at
         DATETIME updated_at
@@ -18,9 +21,6 @@ erDiagram
     CATEGORY {
         BIGINT id PK
         VARCHAR name
-        BIGINT parent_id FK
-        VARCHAR path
-        INT sort_order
         BOOLEAN is_active
         DATETIME created_at
         DATETIME updated_at
@@ -32,20 +32,8 @@ erDiagram
         VARCHAR name
         VARCHAR brand
         TEXT description
-        JSON images_json
-        BOOLEAN is_active
-        DATETIME created_at
-        DATETIME updated_at
-    }
-
-    SKU {
-        BIGINT id PK
-        BIGINT product_id FK
-        JSON attributes_json
         DECIMAL price
-        CHAR currency
         INT stock_qty
-        INT safety_stock
         INT version
         BOOLEAN is_active
         DATETIME created_at
@@ -64,10 +52,9 @@ erDiagram
     CART_ITEM {
         BIGINT id PK
         BIGINT cart_id FK
-        BIGINT sku_id FK
+        BIGINT product_id FK
         INT qty
         DECIMAL unit_price_snapshot
-        CHAR currency
         DATETIME created_at
         DATETIME updated_at
     }
@@ -79,7 +66,6 @@ erDiagram
         DECIMAL total
         DECIMAL discount_total
         DECIMAL shipping_fee
-        CHAR currency
         DATETIME expires_at
         DATETIME created_at
         DATETIME updated_at
@@ -88,7 +74,7 @@ erDiagram
     ORDER_ITEM {
         BIGINT id PK
         BIGINT order_id FK
-        BIGINT sku_id FK
+        BIGINT product_id FK
         INT qty
         DECIMAL unit_price
         DECIMAL discount
@@ -133,22 +119,19 @@ erDiagram
         DATETIME used_at
     }
 
-%% Relationships (카디널리티 표기)
+%% Relationships
     CATEGORY ||--o{ PRODUCT : "분류한다"
-    PRODUCT  ||--o{ SKU     : "옵션을가진다"
+    USER     ||--o{ CART : "장바구니 보유"
+    CART     ||--o{ CART_ITEM : "항목 포함"
+    PRODUCT  ||--o{ CART_ITEM : "담김"
 
-    USER     ||--o{ CART    : "장바구니"
-    CART     ||--o{ CART_ITEM : "항목을포함"
-    SKU      ||--o{ CART_ITEM : "담길수있다"
+    USER     ||--o{ ORDER_ : "주문"
+    ORDER_   ||--o{ ORDER_ITEM : "상품 포함"
+    PRODUCT  ||--o{ ORDER_ITEM : "주문 대상"
+    ORDER_   ||--o{ ORDER_HISTORY : "상태 이력"
 
-    USER     ||--o{ ORDER_    : "주문한다"
-    ORDER_   ||--o{ ORDER_ITEM: "상품을포함"
-    SKU      ||--o{ ORDER_ITEM: "주문가능"
-
-    ORDER_   ||--o{ ORDER_HISTORY : "상태이력"
-
-    COUPON   ||--o{ COUPON_USER : "발급된다"
-    USER     ||--o{ COUPON_USER : "쿠폰보유"
-    ORDER_   ||--o{ COUPON_USER : "사용주문(선택)"
+    COUPON   ||--o{ COUPON_USER : "발급"
+    USER     ||--o{ COUPON_USER : "보유"
+    ORDER_   ||--o{ COUPON_USER : "사용 주문(선택)"
 
 ```

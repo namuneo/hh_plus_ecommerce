@@ -25,11 +25,13 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    // DB 관련 의존성 제거 (인메모리 구현을 위해 JPA, H2 제거)
+    // implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    // runtimeOnly 'com.h2database:h2'
+
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
-    runtimeOnly 'com.h2database:h2'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
