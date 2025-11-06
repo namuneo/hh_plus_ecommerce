@@ -35,17 +35,17 @@
 ## 🔗 **주요 구현 커밋**
 
 ### STEP 5
-- 도메인 모델 구현: 
-- 인메모리 Repository 구현: 
-- 비즈니스 로직 Service 구현: 
-- REST API Controller 구현: 
-- 단위 테스트 작성: 
+- 도메인 모델 구현: `91015ab`
+- 인메모리 Repository 구현: `c52445e`
+- 비즈니스 로직 Service 구현: `0cc3c42`
+- REST API Controller 구현: `cf05d8f`
+- 단위 테스트 작성: `c73ae10`
 
 ### STEP 6
-- 동시성 제어 구현: 
-- 동시성 테스트 작성: 
-- 인기 상품 집계 구현: 
-- 동시성 제어 문서화: 
+- 동시성 제어 구현: `0cc3c42` (Service에 synchronized, 낙관적 락 포함)
+- 동시성 테스트 작성: `6512118`
+- 인기 상품 집계 구현: `0cc3c42` (ProductStatsService 포함)
+- 동시성 제어 문서화: `d674ae2` 
 
 ---
 ## 💬 **리뷰 요청 사항**
