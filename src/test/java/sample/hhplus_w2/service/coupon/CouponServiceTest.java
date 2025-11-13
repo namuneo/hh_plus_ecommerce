@@ -1,8 +1,11 @@
 package sample.hhplus_w2.service.coupon;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 import sample.hhplus_w2.domain.coupon.Coupon;
 import sample.hhplus_w2.domain.coupon.CouponStatus;
 import sample.hhplus_w2.domain.coupon.CouponType;
@@ -17,18 +20,19 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 
+@DataJpaTest
+@ActiveProfiles("test")
+@Import({CouponRepositoryImpl.class, CouponUserRepositoryImpl.class, CouponService.class})
 class CouponServiceTest {
 
+    @Autowired
     private CouponService couponService;
-    private CouponRepository couponRepository;
-    private CouponUserRepository couponUserRepository;
 
-    @BeforeEach
-    void setUp() {
-        couponRepository = new CouponRepositoryImpl();
-        couponUserRepository = new CouponUserRepositoryImpl();
-        couponService = new CouponService(couponRepository, couponUserRepository);
-    }
+    @Autowired
+    private CouponRepository couponRepository;
+
+    @Autowired
+    private CouponUserRepository couponUserRepository;
 
     @Test
     @DisplayName("쿠폰 생성 - 정상")

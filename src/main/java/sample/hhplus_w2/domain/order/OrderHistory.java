@@ -1,5 +1,6 @@
 package sample.hhplus_w2.domain.order;
 
+import jakarta.persistence.*;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -8,17 +9,41 @@ import java.time.LocalDateTime;
  * OrderHistory 도메인 엔티티
  * 주문 상태 변경 이력 추적
  */
+@Entity
+@Table(name = "order_history")
 @Getter
 public class OrderHistory {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "order_id", nullable = false)
     private Long orderId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "from_status", length = 20)
     private OrderStatus fromStatus;  // 변경 전 상태 (null 가능 - 최초 생성)
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "to_status", nullable = false, length = 20)
     private OrderStatus toStatus;    // 변경 후 상태
+
+    @Column(length = 500)
     private String reason;           // 변경 사유
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "actor_type", nullable = false, length = 20)
     private ActorType actorType;     // 변경 주체 (SYSTEM, USER, ADMIN)
+
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    private OrderHistory() {
+    protected OrderHistory() {
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
     }
 
     /**

@@ -50,37 +50,18 @@ class ProductTest {
     }
 
     @Test
-    @DisplayName("재고 감소 - 정상 (낙관적 락 성공)")
+    @DisplayName("재고 감소 - 정상")
     void decreaseStock_Success() {
         // given
         Product product = Product.create(1L, "상품", "브랜드", "설명", new BigDecimal("10000"), 10);
         Integer decreaseQty = 5;
-        Integer expectedVersion = 0;
 
         // when
-        boolean result = product.decreaseStock(decreaseQty, expectedVersion);
+        product.decreaseStock(decreaseQty);
 
         // then
-        assertThat(result).isTrue();
         assertThat(product.getStockQty()).isEqualTo(5);
-        assertThat(product.getVersion()).isEqualTo(1);
-    }
-
-    @Test
-    @DisplayName("재고 감소 - 버전 불일치로 실패 (낙관적 락 충돌)")
-    void decreaseStock_VersionMismatch() {
-        // given
-        Product product = Product.create(1L, "상품", "브랜드", "설명", new BigDecimal("10000"), 10);
-        Integer decreaseQty = 5;
-        Integer wrongVersion = 999;
-
-        // when
-        boolean result = product.decreaseStock(decreaseQty, wrongVersion);
-
-        // then
-        assertThat(result).isFalse();
-        assertThat(product.getStockQty()).isEqualTo(10); // 재고 변경 없음
-        assertThat(product.getVersion()).isEqualTo(0); // 버전 변경 없음
+        // version은 JPA가 자동으로 관리
     }
 
     @Test
@@ -91,7 +72,7 @@ class ProductTest {
         Integer decreaseQty = 10;
 
         // when & then
-        assertThatThrownBy(() -> product.decreaseStock(decreaseQty, 0))
+        assertThatThrownBy(() -> product.decreaseStock(decreaseQty))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("재고가 부족합니다");
     }

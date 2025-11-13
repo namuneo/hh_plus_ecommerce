@@ -1,64 +1,52 @@
 package sample.hhplus_w2.repository.order.impl;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import sample.hhplus_w2.domain.order.OrderHistory;
+import sample.hhplus_w2.infrastructure.order.OrderHistoryJpaRepository;
 import sample.hhplus_w2.repository.order.OrderHistoryRepository;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 @Repository
+@RequiredArgsConstructor
 public class OrderHistoryRepositoryImpl implements OrderHistoryRepository {
-    private final Map<Long, OrderHistory> store = new ConcurrentHashMap<>();
-    private final AtomicLong idGenerator = new AtomicLong(1);
+    private final OrderHistoryJpaRepository jpaRepository;
 
     @Override
     public OrderHistory save(OrderHistory orderHistory) {
-        if (orderHistory.getId() == null) {
-            orderHistory.assignId(idGenerator.getAndIncrement());
-        }
-        store.put(orderHistory.getId(), orderHistory);
-        return orderHistory;
+        return jpaRepository.save(orderHistory);
     }
 
     @Override
     public Optional<OrderHistory> findById(Long id) {
-        return Optional.ofNullable(store.get(id));
+        return jpaRepository.findById(id);
     }
 
     @Override
     public List<OrderHistory> findByOrderId(Long orderId) {
-        return store.values().stream()
-                .filter(history -> history.getOrderId().equals(orderId))
-                .sorted((h1, h2) -> h1.getCreatedAt().compareTo(h2.getCreatedAt()))
-                .collect(Collectors.toList());
+        return jpaRepository.findByOrderIdOrderByCreatedAt(orderId);
     }
 
     @Override
     public List<OrderHistory> findAll() {
-        return store.values().stream().collect(Collectors.toList());
+        return jpaRepository.findAll();
     }
 
     @Override
     public void delete(Long id) {
-        store.remove(id);
+        jpaRepository.deleteById(id);
     }
 
     @Override
     public void deleteByOrderId(Long orderId) {
-        List<Long> idsToDelete = store.values().stream()
-                .filter(history -> history.getOrderId().equals(orderId))
-                .map(OrderHistory::getId)
-                .collect(Collectors.toList());
-        idsToDelete.forEach(store::remove);
+        List<OrderHistory> histories = jpaRepository.findByOrderIdOrderByCreatedAt(orderId);
+        jpaRepository.deleteAll(histories);
     }
 
     @Override
     public void deleteAll() {
-        store.clear();
+        jpaRepository.deleteAll();
     }
 }

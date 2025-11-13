@@ -1,11 +1,13 @@
 package sample.hhplus_w2.concurrency;
 
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import sample.hhplus_w2.domain.product.Product;
 import sample.hhplus_w2.repository.product.ProductRepository;
-import sample.hhplus_w2.repository.product.impl.ProductRepositoryImpl;
 import sample.hhplus_w2.service.product.ProductService;
 
 import java.math.BigDecimal;
@@ -19,15 +21,19 @@ import static org.assertj.core.api.Assertions.*;
 /**
  * 상품 재고 차감 동시성 테스트 (낙관적 락)
  */
+@SpringBootTest
+@ActiveProfiles("test")
 class ProductStockConcurrencyTest {
 
+    @Autowired
     private ProductService productService;
+
+    @Autowired
     private ProductRepository productRepository;
 
-    @BeforeEach
-    void setUp() {
-        productRepository = new ProductRepositoryImpl();
-        productService = new ProductService(productRepository);
+    @AfterEach
+    void tearDown() {
+        productRepository.deleteAll();
     }
 
     @Test
@@ -54,9 +60,7 @@ class ProductStockConcurrencyTest {
                     boolean success = false;
                     int maxRetries = 10;
                     for (int retry = 0; retry < maxRetries && !success; retry++) {
-                        Product currentProduct = productService.getProduct(productId);
-                        success = productService.decreaseStock(productId, quantityPerOrder,
-                                currentProduct.getVersion());
+                        success = productService.decreaseStock(productId, quantityPerOrder);
                         if (success) {
                             successCount.incrementAndGet();
                             break;
@@ -116,8 +120,7 @@ class ProductStockConcurrencyTest {
                         if (currentProduct.getStockQty() < quantityPerOrder) {
                             break; // 재고 부족
                         }
-                        success = productService.decreaseStock(productId, quantityPerOrder,
-                                currentProduct.getVersion());
+                        success = productService.decreaseStock(productId, quantityPerOrder);
                         if (success) {
                             successCount.incrementAndGet();
                             break;
@@ -168,8 +171,7 @@ class ProductStockConcurrencyTest {
                         if (currentProduct.getStockQty() < 1) {
                             break;
                         }
-                        success = productService.decreaseStock(productId, 1,
-                                currentProduct.getVersion());
+                        success = productService.decreaseStock(productId, 1);
                         if (success) {
                             totalDecreased.incrementAndGet();
                             break;
@@ -229,8 +231,7 @@ class ProductStockConcurrencyTest {
                             if (currentProduct.getStockQty() < 5) {
                                 break;
                             }
-                            success = productService.decreaseStock(productId, 5,
-                                    currentProduct.getVersion());
+                            success = productService.decreaseStock(productId, 5);
                             if (success) {
                                 break;
                             }

@@ -1,8 +1,11 @@
 package sample.hhplus_w2.service.order;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 import sample.hhplus_w2.domain.cart.Cart;
 import sample.hhplus_w2.domain.cart.CartItem;
 import sample.hhplus_w2.domain.order.Order;
@@ -28,28 +31,32 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 
+@DataJpaTest
+@ActiveProfiles("test")
+@Import({OrderRepositoryImpl.class, OrderItemRepositoryImpl.class, OrderHistoryRepositoryImpl.class,
+        CartRepositoryImpl.class, CartItemRepositoryImpl.class, ProductRepositoryImpl.class, OrderService.class})
 class OrderServiceTest {
 
+    @Autowired
     private OrderService orderService;
+
+    @Autowired
     private OrderRepository orderRepository;
+
+    @Autowired
     private OrderItemRepository orderItemRepository;
+
+    @Autowired
     private OrderHistoryRepository orderHistoryRepository;
+
+    @Autowired
     private CartRepository cartRepository;
+
+    @Autowired
     private CartItemRepository cartItemRepository;
+
+    @Autowired
     private ProductRepository productRepository;
-
-    @BeforeEach
-    void setUp() {
-        orderRepository = new OrderRepositoryImpl();
-        orderItemRepository = new OrderItemRepositoryImpl();
-        orderHistoryRepository = new OrderHistoryRepositoryImpl();
-        cartRepository = new CartRepositoryImpl();
-        cartItemRepository = new CartItemRepositoryImpl();
-        productRepository = new ProductRepositoryImpl();
-
-        orderService = new OrderService(orderRepository, orderItemRepository, orderHistoryRepository,
-                cartItemRepository, productRepository);
-    }
 
     @Test
     @DisplayName("주문 생성 - 정상")

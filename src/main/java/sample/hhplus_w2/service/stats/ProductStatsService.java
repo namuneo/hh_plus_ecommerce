@@ -1,6 +1,7 @@
 package sample.hhplus_w2.service.stats;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import sample.hhplus_w2.domain.order.Order;
 import sample.hhplus_w2.domain.order.OrderItem;
 import sample.hhplus_w2.domain.order.OrderStatus;
@@ -40,6 +41,7 @@ public class ProductStatsService {
     /**
      * 최근 N일간 인기 상품 TOP 조회 (판매량 기준)
      */
+    @Transactional
     public List<ProductSalesStats> getTopProductsByPeriod(Integer days, int limit) {
         // 통계 갱신
         aggregateSalesStats(days);
@@ -51,6 +53,7 @@ public class ProductStatsService {
     /**
      * 최근 N일간 인기 상품 TOP 조회 (매출액 기준)
      */
+    @Transactional
     public List<ProductSalesStats> getTopProductsByRevenue(Integer days, int limit) {
         // 통계 갱신
         aggregateSalesStats(days);
@@ -63,6 +66,7 @@ public class ProductStatsService {
      * 판매 통계 집계
      * 최근 N일간의 결제 완료된 주문을 기반으로 상품별 판매량/매출 집계
      */
+    @Transactional
     public void aggregateSalesStats(Integer days) {
         LocalDateTime fromDate = LocalDateTime.now().minusDays(days);
 

@@ -1,5 +1,6 @@
 package sample.hhplus_w2.domain.coupon;
 
+import jakarta.persistence.*;
 import lombok.Getter;
 
 import java.math.BigDecimal;
@@ -10,24 +11,73 @@ import java.time.LocalDateTime;
  * Coupon 도메인 엔티티
  * 쿠폰 정책 및 선착순 발급 관리
  */
+@Entity
+@Table(name = "coupon", indexes = {
+    @Index(name = "idx_coupon_status", columnList = "status")
+})
 @Getter
 public class Coupon {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(unique = true, nullable = false, length = 50)
     private String code;                    // 쿠폰 코드
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
     private CouponType type;                // FIXED(정액) / PERCENTAGE(정률)
+
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;              // 할인 금액 또는 할인율
+
+    @Column(name = "total_issuable", nullable = false)
     private Integer totalIssuable;          // 총 발급 가능 수량
+
+    @Column(nullable = false)
     private Integer issued;                 // 현재까지 발급된 수량
+
+    @Column(name = "per_user_limit")
     private Integer perUserLimit;           // 1인당 발급 제한
+
+    @Column(name = "valid_from")
     private LocalDateTime validFrom;        // 유효 기간 시작
+
+    @Column(name = "valid_to")
     private LocalDateTime validTo;          // 유효 기간 종료
+
+    @Column(name = "min_order_amount", precision = 10, scale = 2)
     private BigDecimal minOrderAmount;      // 최소 주문 금액
+
+    @Column
     private Boolean stackable;              // 중복 사용 가능 여부
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
     private CouponStatus status;            // DRAFT, PUBLISHED, PAUSED, EXPIRED
+
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    private Coupon() {
+    @Version
+    @Column(nullable = false)
+    private Integer version;                // JPA 낙관적 락 버전
+
+    protected Coupon() {
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 
     /**
@@ -73,9 +123,10 @@ public class Coupon {
 
     /**
      * 쿠폰 발급 (선착순)
+     * JPA @Version이 자동으로 동시성 제어
      * @return 발급 성공 여부
      */
-    public synchronized boolean issue() {
+    public boolean issue() {
         if (!CouponStatus.PUBLISHED.equals(this.status)) {
             throw new IllegalStateException("발급 가능한 상태가 아닙니다.");
         }

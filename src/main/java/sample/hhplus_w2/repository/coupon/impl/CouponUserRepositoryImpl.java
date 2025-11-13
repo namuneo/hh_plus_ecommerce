@@ -1,85 +1,67 @@
 package sample.hhplus_w2.repository.coupon.impl;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import sample.hhplus_w2.domain.coupon.CouponUser;
 import sample.hhplus_w2.domain.coupon.CouponUserStatus;
+import sample.hhplus_w2.infrastructure.coupon.CouponUserJpaRepository;
 import sample.hhplus_w2.repository.coupon.CouponUserRepository;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 @Repository
+@RequiredArgsConstructor
 public class CouponUserRepositoryImpl implements CouponUserRepository {
-    private final Map<Long, CouponUser> store = new ConcurrentHashMap<>();
-    private final AtomicLong idGenerator = new AtomicLong(1);
+    private final CouponUserJpaRepository jpaRepository;
 
     @Override
     public CouponUser save(CouponUser couponUser) {
-        if (couponUser.getId() == null) {
-            couponUser.assignId(idGenerator.getAndIncrement());
-        }
-        store.put(couponUser.getId(), couponUser);
-        return couponUser;
+        return jpaRepository.save(couponUser);
     }
 
     @Override
     public Optional<CouponUser> findById(Long id) {
-        return Optional.ofNullable(store.get(id));
+        return jpaRepository.findById(id);
     }
 
     @Override
     public Optional<CouponUser> findByCouponIdAndUserId(Long couponId, Long userId) {
-        return store.values().stream()
-                .filter(cu -> cu.getCouponId().equals(couponId)
-                        && cu.getUserId().equals(userId))
-                .findFirst();
+        return jpaRepository.findByCouponIdAndUserId(couponId, userId);
     }
 
     @Override
     public List<CouponUser> findByUserId(Long userId) {
-        return store.values().stream()
-                .filter(cu -> cu.getUserId().equals(userId))
-                .collect(Collectors.toList());
+        return jpaRepository.findByUserId(userId);
     }
 
     @Override
     public List<CouponUser> findByCouponId(Long couponId) {
-        return store.values().stream()
-                .filter(cu -> cu.getCouponId().equals(couponId))
-                .collect(Collectors.toList());
+        return jpaRepository.findByCouponId(couponId);
     }
 
     @Override
     public List<CouponUser> findByUserIdAndStatus(Long userId, CouponUserStatus status) {
-        return store.values().stream()
-                .filter(cu -> cu.getUserId().equals(userId)
-                        && cu.getStatus().equals(status))
-                .collect(Collectors.toList());
+        return jpaRepository.findByUserIdAndStatus(userId, status);
     }
 
     @Override
     public Optional<CouponUser> findByOrderId(Long orderId) {
-        return store.values().stream()
-                .filter(cu -> cu.getOrderId() != null && cu.getOrderId().equals(orderId))
-                .findFirst();
+        return jpaRepository.findByOrderId(orderId);
     }
 
     @Override
     public List<CouponUser> findAll() {
-        return store.values().stream().collect(Collectors.toList());
+        return jpaRepository.findAll();
     }
 
     @Override
     public void delete(Long id) {
-        store.remove(id);
+        jpaRepository.deleteById(id);
     }
 
     @Override
     public void deleteAll() {
-        store.clear();
+        jpaRepository.deleteAll();
     }
 }

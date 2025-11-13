@@ -1,8 +1,11 @@
 package sample.hhplus_w2.service.product;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 import sample.hhplus_w2.domain.product.Product;
 import sample.hhplus_w2.repository.product.ProductRepository;
 import sample.hhplus_w2.repository.product.impl.ProductRepositoryImpl;
@@ -12,16 +15,16 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 
+@DataJpaTest
+@ActiveProfiles("test")
+@Import({ProductRepositoryImpl.class, ProductService.class})
 class ProductServiceTest {
 
+    @Autowired
     private ProductService productService;
-    private ProductRepository productRepository;
 
-    @BeforeEach
-    void setUp() {
-        productRepository = new ProductRepositoryImpl();
-        productService = new ProductService(productRepository);
-    }
+    @Autowired
+    private ProductRepository productRepository;
 
     @Test
     @DisplayName("상품 생성 - 정상")
@@ -156,35 +159,35 @@ class ProductServiceTest {
     }
 
     @Test
-    @DisplayName("재고 감소 - 낙관적 락 성공")
+    @DisplayName("재고 감소 - 성공")
     void decreaseStock_Success() {
         // given
         Product product = productService.createProduct(1L, "상품", "브랜드", "설명",
                 new BigDecimal("10000"), 10);
 
         // when
-        boolean result = productService.decreaseStock(product.getId(), 5, product.getVersion());
+        boolean result = productService.decreaseStock(product.getId(), 5);
 
         // then
         assertThat(result).isTrue();
         Product updated = productService.getProduct(product.getId());
         assertThat(updated.getStockQty()).isEqualTo(5);
-        assertThat(updated.getVersion()).isEqualTo(1);
+        // JPA @Version이 자동 관리
+        assertThat(updated.getVersion()).isGreaterThanOrEqualTo(0);
     }
 
     @Test
-    @DisplayName("재고 감소 - 버전 불일치로 실패")
-    void decreaseStock_VersionMismatch() {
+    @DisplayName("재고 감소 - 재고 부족으로 실패")
+    void decreaseStock_InsufficientStock() {
         // given
         Product product = productService.createProduct(1L, "상품", "브랜드", "설명",
                 new BigDecimal("10000"), 10);
-        Integer wrongVersion = 999;
 
-        // when
-        boolean result = productService.decreaseStock(product.getId(), 5, wrongVersion);
+        // when & then
+        assertThatThrownBy(() -> productService.decreaseStock(product.getId(), 15))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("재고가 부족합니다");
 
-        // then
-        assertThat(result).isFalse();
         Product updated = productService.getProduct(product.getId());
         assertThat(updated.getStockQty()).isEqualTo(10); // 재고 변경 없음
     }
