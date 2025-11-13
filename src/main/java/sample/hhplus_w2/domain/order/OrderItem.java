@@ -10,7 +10,10 @@ import java.time.LocalDateTime;
  * OrderItem 도메인 엔티티
  */
 @Entity
-@Table(name = "order_item")
+@Table(name = "order_item", indexes = {
+    @Index(name = "idx_order_item_order", columnList = "order_id"),
+    @Index(name = "idx_order_item_product", columnList = "product_id")
+})
 @Getter
 public class OrderItem {
     @Id

@@ -12,7 +12,9 @@ import java.time.LocalDateTime;
  * 쿠폰 정책 및 선착순 발급 관리
  */
 @Entity
-@Table(name = "coupon")
+@Table(name = "coupon", indexes = {
+    @Index(name = "idx_coupon_status", columnList = "status")
+})
 @Getter
 public class Coupon {
     @Id
