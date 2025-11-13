@@ -1,5 +1,6 @@
 package sample.hhplus_w2.domain.user;
 
+import jakarta.persistence.*;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -7,21 +8,61 @@ import java.time.LocalDateTime;
 /**
  * User 도메인 엔티티
  */
+@Entity
+@Table(name = "user", indexes = {
+        @Index(name = "idx_user_email", columnList = "email")
+})
 @Getter
 public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(unique = true, nullable = false, length = 100)
     private String email;
+
+    @Column(name = "password_hash", length = 255)
     private String passwordHash;
+
+    @Column(nullable = false, length = 100)
     private String name;
+
+    @Column(length = 20)
     private String phone;
+
+    @Column(name = "address_line1", length = 255)
     private String addressLine1;
+
+    @Column(name = "address_line2", length = 255)
     private String addressLine2;
+
+    @Column(name = "postal_code", length = 20)
     private String postalCode;
+
+    @Column(name = "is_active", nullable = false)
     private Boolean isActive;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    private User() {
+    protected User() {
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    private void oldConstructor() {
     }
 
     /**

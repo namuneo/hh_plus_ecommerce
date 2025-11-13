@@ -1,5 +1,6 @@
 package sample.hhplus_w2.domain.cart;
 
+import jakarta.persistence.*;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -7,16 +8,45 @@ import java.time.LocalDateTime;
 /**
  * Cart 도메인 엔티티
  */
+@Entity
+@Table(name = "cart", indexes = {
+        @Index(name = "idx_cart_user", columnList = "user_id, status"),
+        @Index(name = "idx_cart_guest", columnList = "guest_token")
+})
 @Getter
 public class Cart {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "user_id")
     private Long userId;         // 회원 장바구니
+
+    @Column(name = "guest_token", length = 255)
     private String guestToken;   // 비회원 장바구니 (토큰 기반)
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
     private CartStatus status;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    private Cart() {
+    protected Cart() {
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 
     /**

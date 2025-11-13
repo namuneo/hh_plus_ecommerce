@@ -1,5 +1,6 @@
 package sample.hhplus_w2.domain.order;
 
+import jakarta.persistence.*;
 import lombok.Getter;
 
 import java.math.BigDecimal;
@@ -8,19 +9,55 @@ import java.time.LocalDateTime;
 /**
  * Order 도메인 엔티티
  */
+@Entity
+@Table(name = "order_", indexes = {
+        @Index(name = "idx_order_user_created", columnList = "user_id, created_at"),
+        @Index(name = "idx_order_status", columnList = "status, created_at"),
+        @Index(name = "idx_order_expires", columnList = "expires_at")
+})
 @Getter
 public class Order {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "user_id", nullable = false)
     private Long userId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
     private OrderStatus status;
+
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal total;           // 총 주문 금액
+
+    @Column(name = "discount_total", precision = 10, scale = 2)
     private BigDecimal discountTotal;   // 총 할인 금액
+
+    @Column(name = "shipping_fee", precision = 10, scale = 2)
     private BigDecimal shippingFee;     // 배송비
+
+    @Column(name = "expires_at")
     private LocalDateTime expiresAt;    // 주문 만료 시간 (결제 대기 TTL)
+
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    private Order() {
+    protected Order() {
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 
     /**
