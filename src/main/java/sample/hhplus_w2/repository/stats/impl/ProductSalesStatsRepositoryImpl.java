@@ -1,59 +1,42 @@
 package sample.hhplus_w2.repository.stats.impl;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 import sample.hhplus_w2.domain.stats.ProductSalesStats;
+import sample.hhplus_w2.infrastructure.stats.ProductSalesStatsJpaRepository;
 import sample.hhplus_w2.repository.stats.ProductSalesStatsRepository;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 @Repository
+@RequiredArgsConstructor
 public class ProductSalesStatsRepositoryImpl implements ProductSalesStatsRepository {
-
-    private final Map<Long, ProductSalesStats> store = new ConcurrentHashMap<>();
-    private final AtomicLong idGenerator = new AtomicLong(1);
+    private final ProductSalesStatsJpaRepository jpaRepository;
 
     @Override
     public ProductSalesStats save(ProductSalesStats stats) {
-        if (stats.getId() == null) {
-            stats.assignId(idGenerator.getAndIncrement());
-        }
-        store.put(stats.getId(), stats);
-        return stats;
+        return jpaRepository.save(stats);
     }
 
     @Override
     public Optional<ProductSalesStats> findByProductIdAndDaysRange(Long productId, Integer daysRange) {
-        return store.values().stream()
-                .filter(stats -> stats.getProductId().equals(productId) && stats.getDaysRange().equals(daysRange))
-                .findFirst();
+        return jpaRepository.findByProductIdAndDaysRange(productId, daysRange);
     }
 
     @Override
     public List<ProductSalesStats> findByDaysRangeOrderBySalesCountDesc(Integer daysRange, int limit) {
-        return store.values().stream()
-                .filter(stats -> stats.getDaysRange().equals(daysRange))
-                .sorted(Comparator.comparing(ProductSalesStats::getSalesCount).reversed())
-                .limit(limit)
-                .collect(Collectors.toList());
+        return jpaRepository.findByDaysRangeOrderBySalesCountDesc(daysRange, PageRequest.of(0, limit));
     }
 
     @Override
     public List<ProductSalesStats> findByDaysRangeOrderBySalesAmountDesc(Integer daysRange, int limit) {
-        return store.values().stream()
-                .filter(stats -> stats.getDaysRange().equals(daysRange))
-                .sorted(Comparator.comparing(ProductSalesStats::getSalesAmount).reversed())
-                .limit(limit)
-                .collect(Collectors.toList());
+        return jpaRepository.findByDaysRangeOrderBySalesAmountDesc(daysRange, PageRequest.of(0, limit));
     }
 
     @Override
     public void deleteAll() {
-        store.clear();
+        jpaRepository.deleteAll();
     }
 }

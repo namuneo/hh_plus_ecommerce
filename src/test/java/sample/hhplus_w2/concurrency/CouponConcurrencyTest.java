@@ -1,14 +1,15 @@
 package sample.hhplus_w2.concurrency;
 
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import sample.hhplus_w2.domain.coupon.Coupon;
 import sample.hhplus_w2.domain.coupon.CouponType;
 import sample.hhplus_w2.repository.coupon.CouponRepository;
 import sample.hhplus_w2.repository.coupon.CouponUserRepository;
-import sample.hhplus_w2.repository.coupon.impl.CouponRepositoryImpl;
-import sample.hhplus_w2.repository.coupon.impl.CouponUserRepositoryImpl;
 import sample.hhplus_w2.service.coupon.CouponService;
 
 import java.math.BigDecimal;
@@ -22,17 +23,23 @@ import static org.assertj.core.api.Assertions.*;
 /**
  * 쿠폰 선착순 발급 동시성 테스트
  */
+@SpringBootTest
+@ActiveProfiles("test")
 class CouponConcurrencyTest {
 
+    @Autowired
     private CouponService couponService;
+
+    @Autowired
     private CouponRepository couponRepository;
+
+    @Autowired
     private CouponUserRepository couponUserRepository;
 
-    @BeforeEach
-    void setUp() {
-        couponRepository = new CouponRepositoryImpl();
-        couponUserRepository = new CouponUserRepositoryImpl();
-        couponService = new CouponService(couponRepository, couponUserRepository);
+    @AfterEach
+    void tearDown() {
+        couponUserRepository.deleteAll();
+        couponRepository.deleteAll();
     }
 
     @Test

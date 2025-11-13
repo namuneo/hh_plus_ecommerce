@@ -1,8 +1,11 @@
 package sample.hhplus_w2.repository.product;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 import sample.hhplus_w2.domain.product.Product;
 import sample.hhplus_w2.repository.product.impl.ProductRepositoryImpl;
 
@@ -12,14 +15,13 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 
+@DataJpaTest
+@ActiveProfiles("test")
+@Import(ProductRepositoryImpl.class)
 class ProductRepositoryTest {
 
+    @Autowired
     private ProductRepository productRepository;
-
-    @BeforeEach
-    void setUp() {
-        productRepository = new ProductRepositoryImpl();
-    }
 
     @Test
     @DisplayName("상품 저장 - 신규")

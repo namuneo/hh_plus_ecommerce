@@ -1,8 +1,11 @@
 package sample.hhplus_w2.service.stats;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 import sample.hhplus_w2.domain.cart.Cart;
 import sample.hhplus_w2.domain.cart.CartItem;
 import sample.hhplus_w2.domain.order.Order;
@@ -30,31 +33,30 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 
+@DataJpaTest
+@ActiveProfiles("test")
+@Import({ProductSalesStatsRepositoryImpl.class, OrderRepositoryImpl.class, OrderItemRepositoryImpl.class,
+        OrderHistoryRepositoryImpl.class, CartRepositoryImpl.class, CartItemRepositoryImpl.class,
+        ProductRepositoryImpl.class, ProductStatsService.class, OrderService.class, ProductService.class})
 class ProductStatsServiceTest {
 
+    @Autowired
     private ProductStatsService productStatsService;
+
+    @Autowired
     private OrderService orderService;
+
+    @Autowired
     private ProductService productService;
+
+    @Autowired
     private CartRepository cartRepository;
+
+    @Autowired
     private CartItemRepository cartItemRepository;
+
+    @Autowired
     private ProductRepository productRepository;
-
-    @BeforeEach
-    void setUp() {
-        ProductSalesStatsRepository statsRepository = new ProductSalesStatsRepositoryImpl();
-        OrderRepository orderRepository = new OrderRepositoryImpl();
-        OrderItemRepository orderItemRepository = new OrderItemRepositoryImpl();
-        OrderHistoryRepository orderHistoryRepository = new OrderHistoryRepositoryImpl();
-        cartRepository = new CartRepositoryImpl();
-        cartItemRepository = new CartItemRepositoryImpl();
-        productRepository = new ProductRepositoryImpl();
-
-        productStatsService = new ProductStatsService(statsRepository, orderRepository,
-                orderItemRepository, productRepository);
-        orderService = new OrderService(orderRepository, orderItemRepository, orderHistoryRepository,
-                cartItemRepository, productRepository);
-        productService = new ProductService(productRepository);
-    }
 
     @Test
     @DisplayName("인기 상품 집계 - 판매량 기준 TOP 5")

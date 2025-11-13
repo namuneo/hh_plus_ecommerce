@@ -1,24 +1,21 @@
 package sample.hhplus_w2.concurrency;
 
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import sample.hhplus_w2.domain.cart.Cart;
 import sample.hhplus_w2.domain.cart.CartItem;
 import sample.hhplus_w2.domain.order.Order;
 import sample.hhplus_w2.domain.product.Product;
 import sample.hhplus_w2.repository.cart.CartItemRepository;
 import sample.hhplus_w2.repository.cart.CartRepository;
-import sample.hhplus_w2.repository.cart.impl.CartItemRepositoryImpl;
-import sample.hhplus_w2.repository.cart.impl.CartRepositoryImpl;
 import sample.hhplus_w2.repository.order.OrderHistoryRepository;
 import sample.hhplus_w2.repository.order.OrderItemRepository;
 import sample.hhplus_w2.repository.order.OrderRepository;
-import sample.hhplus_w2.repository.order.impl.OrderHistoryRepositoryImpl;
-import sample.hhplus_w2.repository.order.impl.OrderItemRepositoryImpl;
-import sample.hhplus_w2.repository.order.impl.OrderRepositoryImpl;
 import sample.hhplus_w2.repository.product.ProductRepository;
-import sample.hhplus_w2.repository.product.impl.ProductRepositoryImpl;
 import sample.hhplus_w2.service.order.OrderService;
 import sample.hhplus_w2.service.product.ProductService;
 
@@ -33,26 +30,41 @@ import static org.assertj.core.api.Assertions.*;
 /**
  * 주문 생성 및 결제 동시성 테스트
  */
+@SpringBootTest
+@ActiveProfiles("test")
 class OrderConcurrencyTest {
 
+    @Autowired
     private OrderService orderService;
+
+    @Autowired
     private ProductService productService;
-    private ProductRepository productRepository;
+
+    @Autowired
     private CartRepository cartRepository;
+
+    @Autowired
     private CartItemRepository cartItemRepository;
 
-    @BeforeEach
-    void setUp() {
-        OrderRepository orderRepository = new OrderRepositoryImpl();
-        OrderItemRepository orderItemRepository = new OrderItemRepositoryImpl();
-        OrderHistoryRepository orderHistoryRepository = new OrderHistoryRepositoryImpl();
-        cartRepository = new CartRepositoryImpl();
-        cartItemRepository = new CartItemRepositoryImpl();
-        productRepository = new ProductRepositoryImpl();
+    @Autowired
+    private ProductRepository productRepository;
 
-        orderService = new OrderService(orderRepository, orderItemRepository, orderHistoryRepository,
-                cartItemRepository, productRepository);
-        productService = new ProductService(productRepository);
+    @Autowired
+    private OrderRepository orderRepository;
+
+    @Autowired
+    private OrderItemRepository orderItemRepository;
+
+    @Autowired
+    private OrderHistoryRepository orderHistoryRepository;
+
+    @AfterEach
+    void tearDown() {
+        orderItemRepository.deleteAll();
+        orderRepository.deleteAll();
+        cartItemRepository.deleteAll();
+        cartRepository.deleteAll();
+        productRepository.deleteAll();
     }
 
     @Test

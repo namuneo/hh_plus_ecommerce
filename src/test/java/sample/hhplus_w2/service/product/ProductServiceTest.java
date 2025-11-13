@@ -1,8 +1,11 @@
 package sample.hhplus_w2.service.product;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 import sample.hhplus_w2.domain.product.Product;
 import sample.hhplus_w2.repository.product.ProductRepository;
 import sample.hhplus_w2.repository.product.impl.ProductRepositoryImpl;
@@ -12,16 +15,16 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 
+@DataJpaTest
+@ActiveProfiles("test")
+@Import({ProductRepositoryImpl.class, ProductService.class})
 class ProductServiceTest {
 
+    @Autowired
     private ProductService productService;
-    private ProductRepository productRepository;
 
-    @BeforeEach
-    void setUp() {
-        productRepository = new ProductRepositoryImpl();
-        productService = new ProductService(productRepository);
-    }
+    @Autowired
+    private ProductRepository productRepository;
 
     @Test
     @DisplayName("상품 생성 - 정상")

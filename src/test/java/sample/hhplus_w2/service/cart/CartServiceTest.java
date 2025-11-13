@@ -1,8 +1,11 @@
 package sample.hhplus_w2.service.cart;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 import sample.hhplus_w2.domain.cart.Cart;
 import sample.hhplus_w2.domain.cart.CartItem;
 import sample.hhplus_w2.domain.product.Product;
@@ -18,20 +21,22 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 
+@DataJpaTest
+@ActiveProfiles("test")
+@Import({CartRepositoryImpl.class, CartItemRepositoryImpl.class, ProductRepositoryImpl.class, CartService.class})
 class CartServiceTest {
 
+    @Autowired
     private CartService cartService;
-    private CartRepository cartRepository;
-    private CartItemRepository cartItemRepository;
-    private ProductRepository productRepository;
 
-    @BeforeEach
-    void setUp() {
-        cartRepository = new CartRepositoryImpl();
-        cartItemRepository = new CartItemRepositoryImpl();
-        productRepository = new ProductRepositoryImpl();
-        cartService = new CartService(cartRepository, cartItemRepository, productRepository);
-    }
+    @Autowired
+    private CartRepository cartRepository;
+
+    @Autowired
+    private CartItemRepository cartItemRepository;
+
+    @Autowired
+    private ProductRepository productRepository;
 
     @Test
     @DisplayName("장바구니 조회 또는 생성 - 새로 생성")
