@@ -60,6 +60,10 @@ public class Coupon {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @Version
+    @Column(nullable = false)
+    private Integer version;                // JPA 낙관적 락 버전
+
     protected Coupon() {
     }
 
@@ -117,9 +121,10 @@ public class Coupon {
 
     /**
      * 쿠폰 발급 (선착순)
+     * JPA @Version이 자동으로 동시성 제어
      * @return 발급 성공 여부
      */
-    public synchronized boolean issue() {
+    public boolean issue() {
         if (!CouponStatus.PUBLISHED.equals(this.status)) {
             throw new IllegalStateException("발급 가능한 상태가 아닙니다.");
         }
