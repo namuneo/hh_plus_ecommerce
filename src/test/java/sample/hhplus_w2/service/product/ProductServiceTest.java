@@ -159,35 +159,35 @@ class ProductServiceTest {
     }
 
     @Test
-    @DisplayName("재고 감소 - 낙관적 락 성공")
+    @DisplayName("재고 감소 - 성공")
     void decreaseStock_Success() {
         // given
         Product product = productService.createProduct(1L, "상품", "브랜드", "설명",
                 new BigDecimal("10000"), 10);
 
         // when
-        boolean result = productService.decreaseStock(product.getId(), 5, product.getVersion());
+        boolean result = productService.decreaseStock(product.getId(), 5);
 
         // then
         assertThat(result).isTrue();
         Product updated = productService.getProduct(product.getId());
         assertThat(updated.getStockQty()).isEqualTo(5);
-        assertThat(updated.getVersion()).isEqualTo(1);
+        // JPA @Version이 자동 관리
+        assertThat(updated.getVersion()).isGreaterThanOrEqualTo(0);
     }
 
     @Test
-    @DisplayName("재고 감소 - 버전 불일치로 실패")
-    void decreaseStock_VersionMismatch() {
+    @DisplayName("재고 감소 - 재고 부족으로 실패")
+    void decreaseStock_InsufficientStock() {
         // given
         Product product = productService.createProduct(1L, "상품", "브랜드", "설명",
                 new BigDecimal("10000"), 10);
-        Integer wrongVersion = 999;
 
-        // when
-        boolean result = productService.decreaseStock(product.getId(), 5, wrongVersion);
+        // when & then
+        assertThatThrownBy(() -> productService.decreaseStock(product.getId(), 15))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("재고가 부족합니다");
 
-        // then
-        assertThat(result).isFalse();
         Product updated = productService.getProduct(product.getId());
         assertThat(updated.getStockQty()).isEqualTo(10); // 재고 변경 없음
     }

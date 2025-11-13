@@ -87,10 +87,7 @@ public class OrderService {
             Product product = productRepository.findById(item.getProductId())
                     .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + item.getProductId()));
 
-            boolean success = product.decreaseStock(item.getQty(), product.getVersion());
-            if (!success) {
-                throw new IllegalStateException("재고 차감 실패 (동시성 충돌 또는 재고 부족)");
-            }
+            product.decreaseStock(item.getQty());
             productRepository.save(product);
         }
 

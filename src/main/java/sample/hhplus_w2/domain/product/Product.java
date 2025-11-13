@@ -124,21 +124,15 @@ public class Product {
 
     /**
      * 재고 차감 (낙관적 락)
+     * JPA @Version이 자동으로 동시성 제어
      * @param quantity 차감 수량
-     * @param expectedVersion 예상 버전
-     * @return 재고 차감 성공 여부
      */
-    public boolean decreaseStock(Integer quantity, Integer expectedVersion) {
-        if (!this.version.equals(expectedVersion)) {
-            return false; // 버전 불일치 (동시성 충돌)
-        }
+    public void decreaseStock(Integer quantity) {
         if (this.stockQty < quantity) {
             throw new IllegalStateException("재고가 부족합니다.");
         }
         this.stockQty -= quantity;
-        this.version++;
         this.updatedAt = LocalDateTime.now();
-        return true;
     }
 
     /**
@@ -149,7 +143,6 @@ public class Product {
             throw new IllegalArgumentException("증가 수량은 0보다 커야 합니다.");
         }
         this.stockQty += quantity;
-        this.version++;
         this.updatedAt = LocalDateTime.now();
     }
 

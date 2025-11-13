@@ -60,9 +60,7 @@ class ProductStockConcurrencyTest {
                     boolean success = false;
                     int maxRetries = 10;
                     for (int retry = 0; retry < maxRetries && !success; retry++) {
-                        Product currentProduct = productService.getProduct(productId);
-                        success = productService.decreaseStock(productId, quantityPerOrder,
-                                currentProduct.getVersion());
+                        success = productService.decreaseStock(productId, quantityPerOrder);
                         if (success) {
                             successCount.incrementAndGet();
                             break;
@@ -122,8 +120,7 @@ class ProductStockConcurrencyTest {
                         if (currentProduct.getStockQty() < quantityPerOrder) {
                             break; // 재고 부족
                         }
-                        success = productService.decreaseStock(productId, quantityPerOrder,
-                                currentProduct.getVersion());
+                        success = productService.decreaseStock(productId, quantityPerOrder);
                         if (success) {
                             successCount.incrementAndGet();
                             break;
@@ -174,8 +171,7 @@ class ProductStockConcurrencyTest {
                         if (currentProduct.getStockQty() < 1) {
                             break;
                         }
-                        success = productService.decreaseStock(productId, 1,
-                                currentProduct.getVersion());
+                        success = productService.decreaseStock(productId, 1);
                         if (success) {
                             totalDecreased.incrementAndGet();
                             break;
@@ -235,8 +231,7 @@ class ProductStockConcurrencyTest {
                             if (currentProduct.getStockQty() < 5) {
                                 break;
                             }
-                            success = productService.decreaseStock(productId, 5,
-                                    currentProduct.getVersion());
+                            success = productService.decreaseStock(productId, 5);
                             if (success) {
                                 break;
                             }
