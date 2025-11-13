@@ -1,6 +1,7 @@
 package sample.hhplus_w2.service.order;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import sample.hhplus_w2.domain.cart.CartItem;
 import sample.hhplus_w2.domain.order.*;
 import sample.hhplus_w2.domain.product.Product;
@@ -32,6 +33,7 @@ public class OrderService {
         this.productRepository = productRepository;
     }
 
+    @Transactional
     public Order createOrder(Long userId, Long cartId) {
         List<CartItem> cartItems = cartItemRepository.findByCartId(cartId);
         if (cartItems.isEmpty()) {
@@ -62,6 +64,7 @@ public class OrderService {
         return order;
     }
 
+    @Transactional
     public Order processPayment(Long orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다: " + orderId));
@@ -100,19 +103,23 @@ public class OrderService {
         return order;
     }
 
+    @Transactional(readOnly = true)
     public Order getOrder(Long id) {
         return orderRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다: " + id));
     }
 
+    @Transactional(readOnly = true)
     public List<Order> getOrdersByUser(Long userId) {
         return orderRepository.findByUserId(userId);
     }
 
+    @Transactional(readOnly = true)
     public List<OrderHistory> getOrderHistory(Long orderId) {
         return orderHistoryRepository.findByOrderId(orderId);
     }
 
+    @Transactional(readOnly = true)
     public List<OrderItem> getOrderItems(Long orderId) {
         return orderItemRepository.findByOrderId(orderId);
     }

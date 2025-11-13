@@ -1,6 +1,7 @@
 package sample.hhplus_w2.service.coupon;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import sample.hhplus_w2.domain.coupon.Coupon;
 import sample.hhplus_w2.domain.coupon.CouponStatus;
 import sample.hhplus_w2.domain.coupon.CouponUser;
@@ -20,24 +21,29 @@ public class CouponService {
         this.couponUserRepository = couponUserRepository;
     }
 
+    @Transactional
     public Coupon createCoupon(Coupon coupon) {
         return couponRepository.save(coupon);
     }
 
+    @Transactional(readOnly = true)
     public Coupon getCoupon(Long id) {
         return couponRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("쿠폰을 찾을 수 없습니다: " + id));
     }
 
+    @Transactional(readOnly = true)
     public Coupon getCouponByCode(String code) {
         return couponRepository.findByCode(code)
                 .orElseThrow(() -> new IllegalArgumentException("쿠폰 코드를 찾을 수 없습니다: " + code));
     }
 
+    @Transactional(readOnly = true)
     public List<Coupon> getPublishedCoupons() {
         return couponRepository.findByStatus(CouponStatus.PUBLISHED);
     }
 
+    @Transactional
     public synchronized CouponUser issueCoupon(Long couponId, Long userId) {
         Coupon coupon = getCoupon(couponId);
 
@@ -60,10 +66,12 @@ public class CouponService {
         return couponUserRepository.save(couponUser);
     }
 
+    @Transactional(readOnly = true)
     public List<CouponUser> getUserCoupons(Long userId) {
         return couponUserRepository.findByUserId(userId);
     }
 
+    @Transactional
     public void publishCoupon(Long couponId) {
         Coupon coupon = getCoupon(couponId);
         coupon.publish();

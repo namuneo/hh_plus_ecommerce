@@ -1,6 +1,7 @@
 package sample.hhplus_w2.service.cart;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import sample.hhplus_w2.domain.cart.Cart;
 import sample.hhplus_w2.domain.cart.CartItem;
 import sample.hhplus_w2.domain.cart.CartStatus;
@@ -24,6 +25,7 @@ public class CartService {
         this.productRepository = productRepository;
     }
 
+    @Transactional
     public Cart getOrCreateCart(Long userId) {
         return cartRepository.findByUserIdAndStatus(userId, CartStatus.ACTIVE)
                 .orElseGet(() -> {
@@ -32,10 +34,12 @@ public class CartService {
                 });
     }
 
+    @Transactional(readOnly = true)
     public List<CartItem> getCartItems(Long cartId) {
         return cartItemRepository.findByCartId(cartId);
     }
 
+    @Transactional
     public CartItem addItem(Long userId, Long productId, Integer quantity) {
         Cart cart = getOrCreateCart(userId);
         Product product = productRepository.findById(productId)
@@ -58,6 +62,7 @@ public class CartService {
         }
     }
 
+    @Transactional
     public CartItem updateItemQuantity(Long itemId, Integer quantity) {
         CartItem item = cartItemRepository.findById(itemId)
                 .orElseThrow(() -> new IllegalArgumentException("장바구니 항목을 찾을 수 없습니다: " + itemId));
@@ -65,10 +70,12 @@ public class CartService {
         return cartItemRepository.save(item);
     }
 
+    @Transactional
     public void removeItem(Long itemId) {
         cartItemRepository.delete(itemId);
     }
 
+    @Transactional
     public void clearCart(Long cartId) {
         cartItemRepository.deleteByCartId(cartId);
     }
