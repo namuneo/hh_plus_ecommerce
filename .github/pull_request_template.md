@@ -1,5 +1,4 @@
-## PR 제목 규칙
-[STEP09] 김성준 - e-commerce
+## [STEP09] 김성준 - e-commerce
 
 ---
 
