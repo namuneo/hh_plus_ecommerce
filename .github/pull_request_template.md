@@ -49,7 +49,7 @@
 
 ---
 
-## 📊 P/F 기준 체크리스트 (passFail.md)
+## 📊 P/F 기준 체크리스트
 
 ### STEP 11 - Distributed Lock
 
