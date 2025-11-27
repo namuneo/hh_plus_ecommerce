@@ -1,5 +1,7 @@
 package sample.hhplus_w2.service.stats;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sample.hhplus_w2.domain.order.Order;
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
 /**
  * 상품 판매 통계 서비스
  */
+@Slf4j
 @Service
 public class ProductStatsService {
 
@@ -40,9 +43,15 @@ public class ProductStatsService {
 
     /**
      * 최근 N일간 인기 상품 TOP 조회 (판매량 기준)
+     * - 캐시 적용: 5분 TTL
+     * - 조회 빈도 높고 변경 빈도 낮음
+     * - 키: popularProducts::{days}::{limit}::salesCount
      */
+    @Cacheable(value = "popularProducts", key = "'salesCount_' + #days + '_' + #limit")
     @Transactional
     public List<ProductSalesStats> getTopProductsByPeriod(Integer days, int limit) {
+        log.debug("캐시 미스: 인기 상품 조회 (판매량 기준) - days={}, limit={}", days, limit);
+
         // 통계 갱신
         aggregateSalesStats(days);
 
@@ -52,9 +61,14 @@ public class ProductStatsService {
 
     /**
      * 최근 N일간 인기 상품 TOP 조회 (매출액 기준)
+     * - 캐시 적용: 5분 TTL
+     * - 키: popularProducts::{days}::{limit}::revenue
      */
+    @Cacheable(value = "popularProducts", key = "'revenue_' + #days + '_' + #limit")
     @Transactional
     public List<ProductSalesStats> getTopProductsByRevenue(Integer days, int limit) {
+        log.debug("캐시 미스: 인기 상품 조회 (매출액 기준) - days={}, limit={}", days, limit);
+
         // 통계 갱신
         aggregateSalesStats(days);
 

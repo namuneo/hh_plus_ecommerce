@@ -2,6 +2,8 @@ package sample.hhplus_w2.service.product;
 
 import jakarta.persistence.OptimisticLockException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,14 +37,30 @@ public class ProductService {
         return productRepository.save(product);
     }
 
+    /**
+     * 상품 조회 (캐시 적용)
+     * - Cache-Aside 패턴
+     * - TTL: 10분
+     * - 키: product::{id}
+     */
+    @Cacheable(value = "product", key = "#id")
     @Transactional(readOnly = true)
     public Product getProduct(Long id) {
+        log.debug("캐시 미스: 상품 조회 DB 쿼리 실행 - productId={}", id);
         return productRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다: " + id));
     }
 
+    /**
+     * 전체 상품 목록 조회 (캐시 적용)
+     * - Cache-Aside 패턴
+     * - TTL: 5분
+     * - 키: products::SimpleKey []
+     */
+    @Cacheable(value = "products")
     @Transactional(readOnly = true)
     public List<Product> getAllProducts() {
+        log.debug("캐시 미스: 전체 상품 목록 DB 쿼리 실행");
         return productRepository.findAll();
     }
 
@@ -56,18 +74,31 @@ public class ProductService {
         return productRepository.findByIsActive(true);
     }
 
+    /**
+     * 상품 정보 수정 (캐시 무효화)
+     * - 상품 상세 캐시 삭제
+     * - 상품 목록 캐시 삭제
+     */
+    @CacheEvict(value = {"product", "products"}, key = "#id", allEntries = true)
     @Transactional
     public Product updateProduct(Long id, String name, String brand, String description, BigDecimal price) {
         Product product = getProduct(id);
         product.updateInfo(name, brand, description, price);
+        log.info("상품 정보 수정 및 캐시 무효화: productId={}", id);
         return productRepository.save(product);
     }
 
+    /**
+     * 재고 증가 (캐시 무효화)
+     * - 재고 변경 시 캐시 삭제
+     */
+    @CacheEvict(value = "product", key = "#productId")
     @Transactional
     public void increaseStock(Long productId, Integer quantity) {
         Product product = getProduct(productId);
         product.increaseStock(quantity);
         productRepository.save(product);
+        log.info("재고 증가 및 캐시 무효화: productId={}, quantity={}", productId, quantity);
     }
 
     /**
