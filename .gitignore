@@ -38,3 +38,6 @@ out/
 
 ### Environment Variables ###
 .env
+
+### Personal Notes ###
+docs/checkPoint.md
