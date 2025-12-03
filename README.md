@@ -1,6 +1,39 @@
 
 # 🎉 E-Commerce
 
+## 🔐 환경 설정
+
+### 환경 변수 설정
+
+이 프로젝트는 민감한 정보를 환경 변수로 관리합니다.
+
+1. `.env.example` 파일을 복사하여 `.env` 파일을 생성하세요:
+```bash
+cp .env.example .env
+```
+
+2. `.env` 파일을 열어 실제 값으로 수정하세요:
+```bash
+# MySQL Configuration
+MYSQL_ROOT_PASSWORD=your_secure_password
+MYSQL_DATABASE=ecommerce
+MYSQL_USER=your_username
+MYSQL_PASSWORD=your_secure_password
+
+# Timezone
+TZ=Asia/Seoul
+
+# Redis Configuration
+REDIS_HOST=localhost
+REDIS_PORT=6379
+```
+
+**⚠️ 보안 주의사항:**
+- `.env` 파일은 `.gitignore`에 포함되어 Git에 커밋되지 않습니다
+- 실제 패스워드는 절대 코드에 하드코딩하지 마세요
+- 프로덕션 환경에서는 환경 변수나 Secret Manager를 사용하세요
+
+---
 
 <details>
 <summary>🔍 주요 키워드 공부</summary>
