@@ -22,13 +22,16 @@ public class CouponService {
     private final CouponRepository couponRepository;
     private final CouponUserRepository couponUserRepository;
     private final DistributedLock distributedLock;
+    private final RedisCouponService redisCouponService;
 
     public CouponService(CouponRepository couponRepository,
                          CouponUserRepository couponUserRepository,
-                         DistributedLock distributedLock) {
+                         DistributedLock distributedLock,
+                         RedisCouponService redisCouponService) {
         this.couponRepository = couponRepository;
         this.couponUserRepository = couponUserRepository;
         this.distributedLock = distributedLock;
+        this.redisCouponService = redisCouponService;
     }
 
     @Transactional
@@ -160,5 +163,55 @@ public class CouponService {
             couponId, userId, coupon.getIssued(), coupon.getTotalIssuable());
 
         return saved;
+    }
+
+    /**
+     * 쿠폰 발급 (Redis 기반 비동기)
+     *
+     * Step 14: Redis Set 기반 선착순 쿠폰 발급
+     * - Redis에 즉시 발급 기록 (빠른 응답)
+     * - 스케줄러가 주기적으로 DB 동기화
+     *
+     * 장점:
+     * - 빠른 응답 속도 (Redis 메모리 연산)
+     * - DB 부하 감소 (배치 처리)
+     * - 정확한 선착순 보장
+     *
+     * @param couponId 쿠폰 ID
+     * @param userId 사용자 ID
+     * @return 발급 결과
+     */
+    public RedisCouponService.CouponIssueResult issueCouponAsync(Long couponId, Long userId) {
+        // 1. 쿠폰 기본 정보 조회 (DB)
+        Coupon coupon = getCoupon(couponId);
+
+        if (!coupon.canIssue()) {
+            throw new IllegalStateException("발급 불가능한 쿠폰입니다.");
+        }
+
+        // 2. Redis에서 빠르게 발급 처리
+        RedisCouponService.CouponIssueResult result =
+                redisCouponService.issueCouponAsync(couponId, userId, coupon.getTotalIssuable());
+
+        if (result.isSuccess()) {
+            log.info("쿠폰 발급 성공 (비동기): couponId={}, userId={}, count={}/{}",
+                    couponId, userId, result.getIssuedCount(), coupon.getTotalIssuable());
+        } else {
+            log.debug("쿠폰 발급 실패 (비동기): couponId={}, userId={}, reason={}",
+                    couponId, userId, result.getFailureReason());
+        }
+
+        return result;
+    }
+
+    /**
+     * Redis에서 발급 여부 확인
+     *
+     * @param couponId 쿠폰 ID
+     * @param userId 사용자 ID
+     * @return 발급 여부
+     */
+    public boolean isIssuedInRedis(Long couponId, Long userId) {
+        return redisCouponService.isIssuedToUser(couponId, userId);
     }
 }

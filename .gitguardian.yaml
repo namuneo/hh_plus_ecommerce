@@ -1,0 +1,15 @@
+# GitGuardian configuration
+version: 2
+
+# 과거 커밋의 하드코딩된 시크릿 무시
+# 이 시크릿들은 더 이상 사용되지 않으며, 현재 코드는 환경 변수를 사용합니다
+paths-ignore:
+  - "**/*.md"
+  - "**/*.example"
+
+# 알려진 테스트/개발 시크릿 무시
+matches-ignore:
+  - name: Generic Password
+    match: hhplus123  # 개발용 패스워드, 프로덕션에서 미사용
+  - name: Generic Password  
+    match: root  # MySQL root 개발용, 프로덕션에서 미사용

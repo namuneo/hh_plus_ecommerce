@@ -1,5 +1,6 @@
 package sample.hhplus_w2.service.order;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sample.hhplus_w2.domain.cart.CartItem;
@@ -10,10 +11,12 @@ import sample.hhplus_w2.repository.order.OrderHistoryRepository;
 import sample.hhplus_w2.repository.order.OrderItemRepository;
 import sample.hhplus_w2.repository.order.OrderRepository;
 import sample.hhplus_w2.repository.product.ProductRepository;
+import sample.hhplus_w2.service.ranking.ProductRankingService;
 
 import java.math.BigDecimal;
 import java.util.List;
 
+@Slf4j
 @Service
 public class OrderService {
 
@@ -22,15 +25,17 @@ public class OrderService {
     private final OrderHistoryRepository orderHistoryRepository;
     private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
+    private final ProductRankingService rankingService;
 
     public OrderService(OrderRepository orderRepository, OrderItemRepository orderItemRepository,
                            OrderHistoryRepository orderHistoryRepository, CartItemRepository cartItemRepository,
-                           ProductRepository productRepository) {
+                           ProductRepository productRepository, ProductRankingService rankingService) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.orderHistoryRepository = orderHistoryRepository;
         this.cartItemRepository = cartItemRepository;
         this.productRepository = productRepository;
+        this.rankingService = rankingService;
     }
 
     @Transactional
@@ -96,6 +101,12 @@ public class OrderService {
 
         OrderHistory history = OrderHistory.create(order.getId(), OrderStatus.PENDING, OrderStatus.PAID, "결제 완료", ActorType.USER);
         orderHistoryRepository.save(history);
+
+        // 랭킹 업데이트: 주문 완료 시 상품별 주문 수량 증가
+        for (OrderItem item : orderItems) {
+            rankingService.incrementProductOrder(item.getProductId(), item.getQty());
+        }
+        log.info("주문 완료 및 랭킹 업데이트: orderId={}, items={}", orderId, orderItems.size());
 
         return order;
     }
