@@ -3,9 +3,9 @@ package sample.hhplus_w2.service.order;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 import sample.hhplus_w2.domain.cart.Cart;
 import sample.hhplus_w2.domain.cart.CartItem;
 import sample.hhplus_w2.domain.order.Order;
@@ -15,26 +15,19 @@ import sample.hhplus_w2.domain.order.OrderStatus;
 import sample.hhplus_w2.domain.product.Product;
 import sample.hhplus_w2.repository.cart.CartItemRepository;
 import sample.hhplus_w2.repository.cart.CartRepository;
-import sample.hhplus_w2.repository.cart.impl.CartItemRepositoryImpl;
-import sample.hhplus_w2.repository.cart.impl.CartRepositoryImpl;
 import sample.hhplus_w2.repository.order.OrderHistoryRepository;
 import sample.hhplus_w2.repository.order.OrderItemRepository;
 import sample.hhplus_w2.repository.order.OrderRepository;
-import sample.hhplus_w2.repository.order.impl.OrderHistoryRepositoryImpl;
-import sample.hhplus_w2.repository.order.impl.OrderItemRepositoryImpl;
-import sample.hhplus_w2.repository.order.impl.OrderRepositoryImpl;
 import sample.hhplus_w2.repository.product.ProductRepository;
-import sample.hhplus_w2.repository.product.impl.ProductRepositoryImpl;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 
-@DataJpaTest
+@SpringBootTest
 @ActiveProfiles("test")
-@Import({OrderRepositoryImpl.class, OrderItemRepositoryImpl.class, OrderHistoryRepositoryImpl.class,
-        CartRepositoryImpl.class, CartItemRepositoryImpl.class, ProductRepositoryImpl.class, OrderService.class})
+@Transactional
 class OrderServiceTest {
 
     @Autowired
