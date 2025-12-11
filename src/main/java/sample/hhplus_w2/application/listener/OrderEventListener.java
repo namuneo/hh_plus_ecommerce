@@ -37,7 +37,7 @@ public class OrderEventListener {
 
         try {
             // 랭킹 업데이트: 주문 완료 시 상품별 주문 수량 증가
-            for (OrderItem item : event.getOrderItems()) {
+            for (OrderCompletedEvent.OrderItemSnapshot item : event.getOrderItems()) {
                 rankingService.incrementProductOrder(item.getProductId(), item.getQty());
             }
             log.info("랭킹 업데이트 완료: orderId={}, items={}", event.getOrderId(), event.getOrderItems().size());
