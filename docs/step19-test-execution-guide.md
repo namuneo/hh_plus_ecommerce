@@ -48,6 +48,20 @@ k6 version
 
 ### Step 2: Docker 환경 실행
 
+먼저 환경변수 파일을 설정합니다:
+
+```bash
+# .env.example을 복사하여 .env 파일 생성
+cp .env.example .env
+
+# .env 파일을 열어서 실제 패스워드로 수정
+# 예: vim .env 또는 nano .env
+# MYSQL_ROOT_PASSWORD=your_secure_root_password
+# MYSQL_PASSWORD=your_secure_password
+```
+
+그 다음 Docker Compose를 실행합니다:
+
 ```bash
 # MySQL, Redis, Kafka 실행
 docker compose -f docker-compose-full.yml up -d
@@ -96,8 +110,8 @@ curl http://localhost:8080/actuator/health
 # API로 기본 데이터 생성
 curl -X POST http://localhost:8080/api/test-data/init
 
-# 또는 SQL 스크립트 실행
-docker exec -i hhplus_mysql mysql -uhhplus -phhplus123 hhplus_ecommerce < test-data.sql
+# 또는 SQL 스크립트 실행 (.env에 설정한 패스워드 사용)
+docker exec -i hhplus_mysql mysql -u${MYSQL_USER:-hhplus} -p${MYSQL_PASSWORD} hhplus_ecommerce < test-data.sql
 ```
 
 ---
@@ -261,11 +275,11 @@ curl http://localhost:8080/actuator/metrics/tomcat.threads.busy
 ### 2. 데이터베이스 모니터링
 
 ```bash
-# Connection Pool
-docker exec -i hhplus_mysql mysql -uhhplus -phhplus123 -e "SHOW PROCESSLIST;"
+# Connection Pool (환경변수 필요)
+docker exec -i hhplus_mysql mysql -u${MYSQL_USER:-hhplus} -p${MYSQL_PASSWORD} -e "SHOW PROCESSLIST;"
 
-# Slow Query Log
-docker exec -i hhplus_mysql mysql -uhhplus -phhplus123 -e "SELECT * FROM mysql.slow_log LIMIT 10;"
+# Slow Query Log (환경변수 필요)
+docker exec -i hhplus_mysql mysql -u${MYSQL_USER:-hhplus} -p${MYSQL_PASSWORD} -e "SELECT * FROM mysql.slow_log LIMIT 10;"
 ```
 
 ### 3. Redis 모니터링

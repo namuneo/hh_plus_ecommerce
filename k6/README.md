@@ -47,8 +47,20 @@ docker pull grafana/k6:latest
 ```
 
 또는 Docker Compose로 전체 환경 실행:
+
+먼저 환경변수 파일을 설정합니다:
 ```bash
-docker-compose up -d
+# .env.example을 복사하여 .env 파일 생성
+cp .env.example .env
+
+# .env 파일을 열어서 실제 패스워드로 수정
+# MYSQL_ROOT_PASSWORD=your_root_password_here
+# MYSQL_PASSWORD=your_password_here
+```
+
+그 다음 Docker Compose 실행:
+```bash
+docker-compose -f docker-compose-full.yml up -d
 ```
 
 ## 🎯 테스트 시나리오

@@ -5,10 +5,10 @@ services:
     image: mysql:8.0
     container_name: hhplus_mysql
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: hhplus_ecommerce
-      MYSQL_USER: hhplus
-      MYSQL_PASSWORD: hhplus123
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-hhplus_ecommerce}
+      MYSQL_USER: ${MYSQL_USER:-hhplus}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       TZ: Asia/Seoul
     ports:
       - "3306:3306"
@@ -19,7 +19,7 @@ services:
       - --collation-server=utf8mb4_unicode_ci
       - --default-authentication-plugin=mysql_native_password
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uhhplus", "-phhplus123"]
+      test: ["CMD", "sh", "-c", "mysqladmin ping -h localhost -u$$MYSQL_USER -p$$MYSQL_PASSWORD"]
       interval: 10s
       timeout: 5s
       retries: 5
