@@ -49,4 +49,9 @@ public class CouponRepositoryImpl implements CouponRepository {
     public void deleteAll() {
         jpaRepository.deleteAll();
     }
+
+    @Override
+    public int incrementIssuedQty(Long couponId) {
+        return jpaRepository.incrementIssuedQty(couponId);
+    }
 }
