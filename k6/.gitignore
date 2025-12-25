@@ -1,0 +1,13 @@
+# k6 Test Results
+results/
+*.json
+
+# k6 Cloud Results
+k6-cloud-*
+
+# Logs
+*.log
+
+# OS Files
+.DS_Store
+Thumbs.db
